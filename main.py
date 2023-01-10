@@ -47,7 +47,8 @@ def all_books_on_page_func(pagenumber: int) -> list:
     # Get a response from the page
     response = requests.get("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
     # print ("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
-    print("should be shown one")
+    print("!!!!Should be shown once!!!!!!!!!")
+
     # Create soup
     soup = bs4.BeautifulSoup(response.text, "lxml")
 
@@ -67,8 +68,8 @@ def all_books_on_page_func(pagenumber: int) -> list:
 
     return all_books_on_page
 
-
-all_books_on_page_func(mypagenumber)
+# commented this to test!!
+# all_books_on_page_func(mypagenumber) 
 
 
 # print a list of books on the page
