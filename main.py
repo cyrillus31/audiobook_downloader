@@ -1,32 +1,24 @@
-"""
-LOGIC of the main loop
-1. Open first page
-2. Create soup
-3. Find all books on the page
-4. Swithcing the pages loop and showing results of all the books present
-4. Choose a book
-5. Create a list with a links to all files
-6. PROFIT!!
-"""
-
 import bs4
 import requests
 import os
+import time
 
-input ("""
-UPDATED VERSION 11/23/22
+# Establish global variables
+mypagenumber = 1
+booknumber = ""
+totalpages = ""
 
-____________________!!!!!!!!!!THIS IS NEW INFORMATION!!!!!!!!!!_________________
-(in the previous version the link was with "s" at the end https://fulllengthaudiobooks.com/)
+# Introduction to the program
+input ("""REFACTORED VERSION 12/01/23
 
+author: kirill.olegovich31@gmail.com
+github: github.com/IdoubledareU31/
 
-
-This script will allow you to search and bulk download ENGLISH audiobooks from the website:
+This program will allow you to search and bulk download ENGLISH audiobooks from the website:
 https://fulllengthaudiobook.com/
 
-
 All files from one audiobook will be saved to a new dedicated folder created in the same
-directory where this script is located.
+directory as this program.
  
 Please, follow the instructions.
 
@@ -35,13 +27,14 @@ Please, follow the instructions.
 
 """)
 
-mypagenumber = 1
-booknumber = ""
-totalpages = ""
+
 search = input ("What do you want to search for?\n").replace(" ", "+")
 
-# This function prodcues a list of all the books and writes a total number of available pages to a global variable
 def all_books_on_page_func(pagenumber: int) -> list:
+    """This function returns a list of all the books and writes a total number of 
+    available pages to a global variable
+    """
+
     global search
 
     # Get a response from the page
@@ -53,7 +46,7 @@ def all_books_on_page_func(pagenumber: int) -> list:
     soup = bs4.BeautifulSoup(response.text, "lxml")
 
     # Find a class that contains each book. Name of the class starts with a dot and all spaces are dots
-    all_books_on_page = soup.select(".entry.clearfix")
+    list_of_books_on_page = soup.select(".entry.clearfix")
 
     # Looking for a total number of pages available in this particular search and assign to a global variable
     global totalpages
@@ -66,14 +59,11 @@ def all_books_on_page_func(pagenumber: int) -> list:
 
     #     print (totalpages)
 
-    return all_books_on_page
+    return list_of_books_on_page
 
-# commented this to test!!
-# all_books_on_page_func(mypagenumber) 
+def booknumber_on_the_page(all_books_on_page: list) -> None:
+    """The following fuction prints a menu and lits available books on the current web page"""
 
-
-# print a list of books on the page
-def booknumber_on_the_page(all_books_on_page):
     global pagenumber
     global totalpages
     list_of_titles_per_page = []
@@ -91,46 +81,78 @@ def booknumber_on_the_page(all_books_on_page):
     # Following statments explain navigation for the user
     print("\nThe page number is {} of {}\n".format(mypagenumber, totalpages)+
     "Amount of books on the page is {}\n".format(len(list_of_enumerated_titles))+
-    "0) Turn the page forward\n"+
-    "00) Turn the page backward\n"+
-    "000) Change the search\n")
+    "Use the following inputs:"+
+    "0     - to turn the page forward\n"+
+    "00    - to turn the page backward\n"+
+    "000   - to change the search\n"+
+    "close - to exit the program")
 
     for a, b in list_of_enumerated_titles:
         print(str(a) + ")", b)
 
+def switching_pages_and_book_number() -> str:
+    """This function switches pages and allowes you to quit the program"""
 
-# booknumber_on_the_page(all_books_on_page_func(mypagenumber))
-
-
-def switching_pages_and_book_number():
     global mypagenumber
-    booknumber_on_the_page(all_books_on_page_func(mypagenumber))
+    
+    list_of_books_on_page = all_books_on_page_func(mypagenumber)  
+    booknumber_on_the_page(list_of_books_on_page)
+    total_amount_of_books_on_page = len(list_of_books_on_page)
+
     while True:
+        try:
+            x = input("\nWhich book do you want to download? Enter the number: ")
+            print("\n" * 10)
 
-        x = input("\nWhich book do you want to download? Enter the number: ")
-        print("\n" * 10)
-        if x == "0":
-            mypagenumber += 1
+            # Go one page forward
+            if x == "0":
+                mypagenumber += 1
+                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
+                booknumber_on_the_page(list_of_books_on_page)
+                total_amount_of_books_on_page = len(list_of_books_on_page)
+
+            # Go one page backward
+            elif x == "00":
+                mypagenumber -= 1
+                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
+                booknumber_on_the_page(list_of_books_on_page)
+                total_amount_of_books_on_page = len(list_of_books_on_page)
+
+            # Search for another title
+            elif x == "000":
+                global search
+                mypagenumber = 1
+                search = input("\n\nAre you not satisfied with the search results?\nWhat do you want to search for?\n")
+                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
+                booknumber_on_the_page(list_of_books_on_page)
+                total_amount_of_books_on_page = len(list_of_books_on_page)
+
+            # Return the number of the chosen title 
+            elif int(x) >= 1 and int(x) <= total_amount_of_books_on_page:
+                return int(x)
+        
+            # User wants to exit the program
+            elif x == "close":
+                return x
+
+            # User's input is invalid
+            else:
+                print("The input is invalid. Try again.")
+                booknumber_on_the_page(all_books_on_page_func(mypagenumber))
+        
+        except ValueError as e:
+            # User's input is invalid
+            print(str(e) + "\nThe input is invalid. Try again.")
+            time.sleep(0.5)
             booknumber_on_the_page(all_books_on_page_func(mypagenumber))
 
-        elif x == "00":
-            mypagenumber -= 1
-            booknumber_on_the_page(all_books_on_page_func(mypagenumber))
+        
 
-        elif x == "000":
-            global search
-            mypagenumber = 1
-            search = input("\n\nAre you not satisfied with the search results?\nWhat do you want to search for?\n")
-            booknumber_on_the_page(all_books_on_page_func(mypagenumber))
+def listoflinksfiles_func(booknumber: str) -> list:
+    """The fuction take a number of a book on a current web page and returns 
+    a list of links to the files of the books
+    """
 
-        elif int(x) >= 1 and int(x) <= len(all_books_on_page_func(mypagenumber)):
-            return int(x)
-
-# switching_pages_and_book_number()
-
-
-
-def listoflinksfiles_func(booknumber):
     book = all_books_on_page_func(mypagenumber)[int(booknumber)-1]
     list_of_links = [] #list of all the links to all the files of the book
     # print(book.select(".wp-audio-shortcode"))
@@ -141,27 +163,40 @@ def listoflinksfiles_func(booknumber):
 #     print (list_of_links)
     return list_of_links
 
-thelist = listoflinksfiles_func(switching_pages_and_book_number())
+
+def main():
+    while True:
+        booknumber = switching_pages_and_book_number()
+        if booknumber == "close":
+            print("The program will close.")
+            input()
+            break
+        else:
+            print("here!")
+            list_of_links = listoflinksfiles_func(booknumber)
+            print ("\nThis book consists of {} files".format(len(list_of_links)))
+            answer = input ("Do you still want to download? y/n? ")
+
+            if answer[0].lower() == "y":
+                print ("\nDownload started. Please, wait...")
+                for link in list_of_links:
+                    title = link.split("/")[-2].replace("%20", " ")
+                    number = link.split("/")[-1].split(".")[-2].replace("%20", "")
+                    formatt = "."+link.split(".")[-1]
+
+                    try:
+                        os.mkdir(title)
+                    except Exception:
+                        pass
+
+                    with open (title+"/"+number+" "+title+formatt, "bw") as f:
+                        f.write (requests.get(link).content)
+
+                input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
+
+            else:
+                return
 
 
-
-print ("\nThis book consists of {} files".format(len(thelist)))
-answer = input ("Do you still want to download? y/n? ")
-if answer[0].lower() == "y":
-    print ("\nDownload started. Please, wait...")
-    for link in thelist:
-        title = link.split("/")[-2].replace("%20", " ")
-        number = link.split("/")[-1].split(".")[-2].replace("%20", "")
-        formatt = "."+link.split(".")[-1]
-
-        try:
-            os.mkdir(title)
-        except Exception:
-            pass
-
-        with open (title+"/"+number+" "+title+formatt, "bw") as f:
-            f.write (requests.get(link).content)
-
-    input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
-else:
-    input ("-----------RESTART THE PROGRAM AND TRY AGAIN-----------")
+if __name__ == "__main__":
+    main()
