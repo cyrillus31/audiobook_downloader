@@ -39,6 +39,7 @@ def all_books_on_page_func(pagenumber: int) -> list:
     """
 
     global search
+    global totalpages
 
     # Get a response from the page and handle request errors
     try:
@@ -55,8 +56,8 @@ def all_books_on_page_func(pagenumber: int) -> list:
     # Find a class that contains each book. Name of the class starts with a dot and all spaces are dots
     list_of_books_on_page = soup.select(".entry.clearfix")
 
-    # Looking for a total number of pages available in this particular search and assign to a global variable
-    global totalpages
+    # Looking for a total number of pages available in this particular search 
+    # and assign it to a global variable
     if soup.select(".page-numbers") == []:
         totalpages = 1
     elif soup.select(".page-numbers")[-1].text == "»":
@@ -102,6 +103,7 @@ def booknumber_on_the_page(all_books_on_page: list) -> None:
 000   - to change the search
 close - to exit the program
 """)
+    warning = ""
 
     for a, b in list_of_enumerated_titles:
         print(str(a) + ")", b)
@@ -128,7 +130,7 @@ def switching_pages_and_book_number() -> str:
 
             # Go one page forward
             if x == "0":
-                if mypagenumber == totalpages:
+                if mypagenumber == int(totalpages):
                     warning = "Attention!!! Can't exceed the bounds\n"
                     continue
                 else:
@@ -212,7 +214,7 @@ def main():
                 print ("\nDownload started. Please, wait...")
 
                 for link in list_of_links:
-                    title = link.split("/")[-2].replace("%20", " ")
+                    title = link.split("/")[-2].replace("%20", "_")
                     number = link.split("/")[-1].split(".")[-2].replace("%20", "")
                     formatt = "."+link.split(".")[-1]
 
@@ -222,8 +224,9 @@ def main():
                     except FileExistsError:
                         pass
 
-                    with open (title+"/"+number+" "+title+formatt, "bw") as f:
+                    with open (title+"/"+number+"_"+title+formatt, "bw") as f:
                         f.write (requests.get(link).content)
+                    print("File #{} {} of {} is downloaded".format(number, title, len(list_of_links)))
 
                 input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
 
