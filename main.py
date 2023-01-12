@@ -7,6 +7,7 @@ import time
 mypagenumber = 1
 booknumber = ""
 totalpages = ""
+list_of_books_on_page = []
 
 # Introduction to the program
 input ("""REFACTORED VERSION 12/01/23
@@ -79,13 +80,14 @@ def booknumber_on_the_page(all_books_on_page: list) -> None:
         list_of_enumerated_titles.append((a, b))
 
     # Following statments explain navigation for the user
-    print("\nThe page number is {} of {}\n".format(mypagenumber, totalpages)+
+    print("\n"*10 + "The page number is {} of {}\n".format(mypagenumber, totalpages)+
     "Amount of books on the page is {}\n".format(len(list_of_enumerated_titles))+
-    "Use the following inputs:"+
-    "0     - to turn the page forward\n"+
-    "00    - to turn the page backward\n"+
-    "000   - to change the search\n"+
-    "close - to exit the program")
+    """Use the following inputs: 
+    0     - to turn the page forward
+    00    - to turn the page backward
+    000   - to change the search
+    close - to exit the program
+    """)
 
     for a, b in list_of_enumerated_titles:
         print(str(a) + ")", b)
@@ -94,12 +96,14 @@ def switching_pages_and_book_number() -> str:
     """This function switches pages and allowes you to quit the program"""
 
     global mypagenumber
-    
-    list_of_books_on_page = all_books_on_page_func(mypagenumber)  
-    booknumber_on_the_page(list_of_books_on_page)
-    total_amount_of_books_on_page = len(list_of_books_on_page)
+    global list_of_books_on_page
 
     while True:
+
+        list_of_books_on_page = all_books_on_page_func(mypagenumber)  
+        booknumber_on_the_page(list_of_books_on_page)
+        total_amount_of_books_on_page = len(list_of_books_on_page)
+
         try:
             x = input("\nWhich book do you want to download? Enter the number: ")
             print("\n" * 10)
@@ -107,44 +111,33 @@ def switching_pages_and_book_number() -> str:
             # Go one page forward
             if x == "0":
                 mypagenumber += 1
-                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
-                booknumber_on_the_page(list_of_books_on_page)
-                total_amount_of_books_on_page = len(list_of_books_on_page)
 
             # Go one page backward
             elif x == "00":
                 mypagenumber -= 1
-                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
-                booknumber_on_the_page(list_of_books_on_page)
-                total_amount_of_books_on_page = len(list_of_books_on_page)
 
             # Search for another title
             elif x == "000":
                 global search
                 mypagenumber = 1
                 search = input("\n\nAre you not satisfied with the search results?\nWhat do you want to search for?\n")
-                list_of_books_on_page = all_books_on_page_func(mypagenumber)  
-                booknumber_on_the_page(list_of_books_on_page)
-                total_amount_of_books_on_page = len(list_of_books_on_page)
-
-            # Return the number of the chosen title 
-            elif int(x) >= 1 and int(x) <= total_amount_of_books_on_page:
-                return int(x)
         
             # User wants to exit the program
             elif x == "close":
                 return x
 
+            # Return the number of the chosen title 
+            elif int(x) >= 1 and int(x) <= total_amount_of_books_on_page:
+                return int(x)
+
             # User's input is invalid
             else:
                 print("The input is invalid. Try again.")
-                booknumber_on_the_page(all_books_on_page_func(mypagenumber))
         
         except ValueError as e:
             # User's input is invalid
             print(str(e) + "\nThe input is invalid. Try again.")
             time.sleep(0.5)
-            booknumber_on_the_page(all_books_on_page_func(mypagenumber))
 
         
 
@@ -152,9 +145,10 @@ def listoflinksfiles_func(booknumber: str) -> list:
     """The fuction take a number of a book on a current web page and returns 
     a list of links to the files of the books
     """
+    global list_of_books_on_page
 
-    book = all_books_on_page_func(mypagenumber)[int(booknumber)-1]
-    list_of_links = [] #list of all the links to all the files of the book
+    book = list_of_books_on_page[int(booknumber)-1]
+    list_of_links = [] # list of all the links to all the files of the book
     # print(book.select(".wp-audio-shortcode"))
     links_to_files = book.select(".wp-audio-shortcode")
     for item in links_to_files:
@@ -168,9 +162,10 @@ def main():
     while True:
         booknumber = switching_pages_and_book_number()
         if booknumber == "close":
-            print("The program will close.")
+            print("The program will close.\nPress any button")
             input()
-            break
+            return
+
         else:
             print("here!")
             list_of_links = listoflinksfiles_func(booknumber)
@@ -186,6 +181,7 @@ def main():
 
                     try:
                         os.mkdir(title)
+
                     except Exception:
                         pass
 
@@ -195,7 +191,7 @@ def main():
                 input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
 
             else:
-                return
+                pass 
 
 
 if __name__ == "__main__":
