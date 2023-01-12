@@ -11,7 +11,8 @@ list_of_books_on_page = []
 warning = ""
 
 # Introduction to the program
-input ("""\nREFACTORED VERSION 12/Jan/23
+input ("""\nENGLISH AUDIOBOOKS DOWNLOADER v1.0
+Rtefactored on 12/Jan/23
 
 author: kirill.olegovich31@gmail.com
 github: github.com/IdoubledareU31/
@@ -214,7 +215,7 @@ def main():
                     try:
                         os.mkdir(title)
 
-                    except Exception:
+                    except FileExistsError:
                         pass
 
                     with open (title+"/"+number+" "+title+formatt, "bw") as f:
