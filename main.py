@@ -40,8 +40,12 @@ def all_books_on_page_func(pagenumber: int) -> list:
 
     global search
 
-    # Get a response from the page
-    response = requests.get("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
+    # Get a response from the page and handle request errors
+    try:
+        response = requests.get("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
+    except requests.exceptions.RequestException as e:
+        print("\n"*3 + "  There's a problem with the connetion  ".center(70, "!"), end="\n"*3)
+        raise SystemExit(e)
 
     # print ("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
 
@@ -125,7 +129,7 @@ def switching_pages_and_book_number() -> str:
             # Go one page forward
             if x == "0":
                 if mypagenumber == totalpages:
-                    warning = "Can't exceed the bounds"
+                    warning = "Attention!!! Can't exceed the bounds\n"
                     continue
                 else:
                     mypagenumber += 1
@@ -133,7 +137,7 @@ def switching_pages_and_book_number() -> str:
             # Go one page backward
             elif x == "00":
                 if mypagenumber == 1:
-                    warning = "Can't go below the bounds"
+                    warning = "Attention!!! Can't go below the bounds\n"
                     continue
 
                 else:
@@ -228,4 +232,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+        main()

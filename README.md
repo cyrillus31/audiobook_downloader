@@ -22,4 +22,4 @@ ___
 
 ## About the author
 [LinkedIn](https://www.linkedin.com/in/kirill-fedtsov-a37209159/)  
-[Telegram](https://t.me/idoubledareu31)
+[Telegram](https://t.me/idoubledareu31)  
