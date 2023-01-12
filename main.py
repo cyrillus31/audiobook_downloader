@@ -8,9 +8,10 @@ mypagenumber = 1
 booknumber = ""
 totalpages = ""
 list_of_books_on_page = []
+warning = ""
 
 # Introduction to the program
-input ("""REFACTORED VERSION 12/01/23
+input ("""\nREFACTORED VERSION 12/Jan/23
 
 author: kirill.olegovich31@gmail.com
 github: github.com/IdoubledareU31/
@@ -40,8 +41,8 @@ def all_books_on_page_func(pagenumber: int) -> list:
 
     # Get a response from the page
     response = requests.get("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
+
     # print ("https://fulllengthaudiobook.com/page/" + str(pagenumber) + "/?s=" + search)
-    print("!!!!Should be shown once!!!!!!!!!")
 
     # Create soup
     soup = bs4.BeautifulSoup(response.text, "lxml")
@@ -58,63 +59,84 @@ def all_books_on_page_func(pagenumber: int) -> list:
     else:
         totalpages = soup.select(".page-numbers")[-1].text
 
-    #     print (totalpages)
 
     return list_of_books_on_page
+
+
+
 
 def booknumber_on_the_page(all_books_on_page: list) -> None:
     """The following fuction prints a menu and lits available books on the current web page"""
 
-    global pagenumber
     global totalpages
+    global search
+    global warning 
+
     list_of_titles_per_page = []
     list_of_enumerated_titles = []
+
     for book in all_books_on_page:
         if len(book.select("p")[0].text) == 1:
             list_of_titles_per_page.append(book.select("p")[1].text)
         else:
             list_of_titles_per_page.append(book.select("p")[0].text)
 
-    # print (list_of_titles_per_page)
+
     for a, b in enumerate(list_of_titles_per_page, start=1):
         list_of_enumerated_titles.append((a, b))
 
     # Following statments explain navigation for the user
-    print("\n"*10 + "The page number is {} of {}\n".format(mypagenumber, totalpages)+
+    print("\n"*100+
+    warning+
+    "\nYou were searching for: {}\n".format(search)+
+    "The page number is {} of {}\n".format(mypagenumber, totalpages)+
     "Amount of books on the page is {}\n".format(len(list_of_enumerated_titles))+
     """Use the following inputs: 
-    0     - to turn the page forward
-    00    - to turn the page backward
-    000   - to change the search
-    close - to exit the program
-    """)
+0     - to turn the page forward
+00    - to turn the page backward
+000   - to change the search
+close - to exit the program
+""")
 
     for a, b in list_of_enumerated_titles:
         print(str(a) + ")", b)
+
+
+
+
 
 def switching_pages_and_book_number() -> str:
     """This function switches pages and allowes you to quit the program"""
 
     global mypagenumber
     global list_of_books_on_page
+    global warning
+    global totalpages
 
     while True:
-
         list_of_books_on_page = all_books_on_page_func(mypagenumber)  
         booknumber_on_the_page(list_of_books_on_page)
         total_amount_of_books_on_page = len(list_of_books_on_page)
 
         try:
             x = input("\nWhich book do you want to download? Enter the number: ")
-            print("\n" * 10)
 
             # Go one page forward
             if x == "0":
-                mypagenumber += 1
+                if mypagenumber == totalpages:
+                    warning = "Can't exceed the bounds"
+                    continue
+                else:
+                    mypagenumber += 1
 
             # Go one page backward
             elif x == "00":
-                mypagenumber -= 1
+                if mypagenumber == 1:
+                    warning = "Can't go below the bounds"
+                    continue
+
+                else:
+                    mypagenumber -= 1
 
             # Search for another title
             elif x == "000":
@@ -141,7 +163,10 @@ def switching_pages_and_book_number() -> str:
 
         
 
+
+
 def listoflinksfiles_func(booknumber: str) -> list:
+
     """The fuction take a number of a book on a current web page and returns 
     a list of links to the files of the books
     """
@@ -158,22 +183,29 @@ def listoflinksfiles_func(booknumber: str) -> list:
     return list_of_links
 
 
+
+
+
+
 def main():
     while True:
         booknumber = switching_pages_and_book_number()
+
         if booknumber == "close":
-            print("The program will close.\nPress any button")
-            input()
+            print("The program will close.")
+            time.sleep(1)
             return
 
         else:
-            print("here!")
             list_of_links = listoflinksfiles_func(booknumber)
             print ("\nThis book consists of {} files".format(len(list_of_links)))
             answer = input ("Do you still want to download? y/n? ")
 
             if answer[0].lower() == "y":
+                # Creating a folder if it doesn't exist and downloading files there
+
                 print ("\nDownload started. Please, wait...")
+
                 for link in list_of_links:
                     title = link.split("/")[-2].replace("%20", " ")
                     number = link.split("/")[-1].split(".")[-2].replace("%20", "")
