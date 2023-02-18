@@ -12,7 +12,8 @@ class Interface:
         self.soup = None         # the soup of the page
         self.display_step = 1    # result from how many pages will be displayed
         self.warhning = ""       # warning if user tries to go beyond the pages bound
-        self.restart = True      # if we should do the search again
+        self.restart = True      # should we stay in the inner loop?
+        self.chosen_book = None  # the number of the book to download from a page
 
     def get_data(self):
         try:
@@ -55,30 +56,74 @@ close - to exit the program
             print("%s) %s" % (index, title))
 
     def prompt(self):
-        command = input("Enter your command: ")
+        command = input("\nENTER YOUR COMMAND: ")
 
         if command == "0" and self.current_page != self.total_pages:
             self.current_page += 1
-            return 0
+            return False # proceed to download
 
-        elif command == "00" and self.current_page != 1:
+        if command == "0" and self.current_page == self.total_pages:
+            self.warning = "ERROR can't exceed the bound"
+            return False
+
+        if command == "00" and self.current_page != 1:
             self.current_page -= 1
-            return 0
+            return False
 
-        elif command == "000":
-            return 0
+        if command == "00" and self.current_page == 1:
+            self.warning = "ERROR can't go below the bound"
+            return False
+
+        if command == "000":
+            self.restart = False
+            return False 
+
+        if command == "close":
+            print("\nTHE PROGRAM WILL NOW CLOSE")
+            time.sleep(1)
+            exit()
         
         else:
             try:
                 command = int(command) 
+                self.chosen_book = command - 1
+                return True # proceed to download
+
+            except:
+                self.warning = "ERROR the command can't be interpreted"
+                return False
 
 
+    def download(self):
+        links = [link.text for link in self.soup.select(".entry.clearfix")[self.chosen_book].select(".wp-audio-shortcode")]
+        print(f"\nThe book consists of {len(links)} files")
+        
+        answer = input("Do you still want to download? y/n ")
 
+        if answer[0].lower() == "y":
+            print ("\nDownload started. Please, wait...")
 
+            for link in links:
+                title = link.split("/")[-2].replace("%20", "_")
+                number = link.split("/")[-1].split(".")[-2].replace("%20", "")
+                formatt = "."+link.split(".")[-1]
 
+                try:
+                    os.mkdir(title)
 
+                except FileExistsError:
+                    pass
 
+                with open (title+"/"+number+"_"+title+formatt, "bw") as f:
+                    f.write (requests.get(link).content)
+                print("File #{} {} of {} is downloaded".format(number, title, len(list_of_links)))
 
+            input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
+
+        else:
+            pass
+        
+        
 
 if __name__ == "__main__":
 
@@ -86,9 +131,13 @@ if __name__ == "__main__":
         search = input ("What do you want to search for?\n").replace(" ", "+")
 
         mysearch = Interface(search)
-        mysearch.get_data()
-        mysearch.display()
-        if mysearch.prompt()
+        while mysearch.restart:
+            mysearch.get_data()
+            mysearch.display()
+            if mysearch.prompt():
+                mysearch.download()
+            else:
+                break
 
 
 
