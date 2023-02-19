@@ -11,7 +11,7 @@ class Interface:
         self.total_pages = 1     # total number of of available pages
         self.soup = None         # the soup of the page
         self.display_step = 1    # result from how many pages will be displayed
-        self.warhning = ""       # warning if user tries to go beyond the pages bound
+        self.warning = ""        # warning if user tries to go beyond the pages bound
         self.restart = True      # should we stay in the inner loop?
         self.chosen_book = None  # the number of the book to download from a page
 
@@ -30,19 +30,20 @@ class Interface:
         if soup.select(".page-numbers") == []:
             self.total_pages = 1
         elif soup.select(".page-numbers")[-1].text == "»":
-            self.total_pages = soup.select(".page-numbers")[-2].text
+            self.total_pages = int(soup.select(".page-numbers")[-2].text)
             # self.display_step = 1
         else:
-            self.total_pages = soup.select(".page-numbers")[-1].text
+            self.total_pages = int(soup.select(".page-numbers")[-1].text)
             # self.display_step = 2
 
 
     def display(self):
         books = list(enumerate([book.select("p")[0].text for book in self.soup.select(".entry.clearfix")], 1))
         print("\n"*100) # to clear the screen
-        print(self.warning) # warning if the user tries to go beyond the pages bound
+        print(f"\033[0;31m{self.warning}\033[0m\n") # warning if the user tries to go beyond the pages bound
+        self.warning = ""
         print(f"""You were searching for: {self.search}
-The page number is {self.current_page} of {self.total_pages}
+The page number is \033[42m{self.current_page}\033[0m of {self.total_pages}
 Amount of books on this page is {len(books)}
 
 Enter the number of the book or use the following commands:
@@ -63,7 +64,7 @@ close - to exit the program
             return False # proceed to download
 
         if command == "0" and self.current_page == self.total_pages:
-            self.warning = "ERROR can't exceed the bound"
+            self.warning = "!!! ERROR can't exceed the bound !!!"
             return False
 
         if command == "00" and self.current_page != 1:
@@ -71,7 +72,7 @@ close - to exit the program
             return False
 
         if command == "00" and self.current_page == 1:
-            self.warning = "ERROR can't go below the bound"
+            self.warning = "!!! ERROR can't go below the bound !!!"
             return False
 
         if command == "000":
@@ -90,7 +91,7 @@ close - to exit the program
                 return True # proceed to download
 
             except:
-                self.warning = "ERROR the command can't be interpreted"
+                self.warning = "!!! ERROR the command can't be interpreted !!!"
                 return False
 
 
@@ -98,7 +99,7 @@ close - to exit the program
         links = [link.text for link in self.soup.select(".entry.clearfix")[self.chosen_book].select(".wp-audio-shortcode")]
         print(f"\nThe book consists of {len(links)} files")
         
-        answer = input("Do you still want to download? y/n ")
+        answer = input("Do you still want to downloabreakd? y/n ")
 
         if answer[0].lower() == "y":
             print ("\nDownload started. Please, wait...")
@@ -116,7 +117,7 @@ close - to exit the program
 
                 with open (title+"/"+number+"_"+title+formatt, "bw") as f:
                     f.write (requests.get(link).content)
-                print("File #{} {} of {} is downloaded".format(number, title, len(list_of_links)))
+                print("File #{} {} of {} is downloaded".format(number, title, len(links)))
 
             input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
 
@@ -128,7 +129,10 @@ close - to exit the program
 if __name__ == "__main__":
 
     while True:
-        search = input ("What do you want to search for?\n").replace(" ", "+")
+        search = input ("What do you want to search for?\n")
+        # search = input ("What do you want to search for?\n").replace(" ", "+")
+        if search == "close":
+            exit()
 
         mysearch = Interface(search)
         while mysearch.restart:
@@ -137,7 +141,8 @@ if __name__ == "__main__":
             if mysearch.prompt():
                 mysearch.download()
             else:
-                break
+                pass
+                
 
 
 
