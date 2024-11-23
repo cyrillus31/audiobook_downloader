@@ -3,6 +3,8 @@ import requests
 import os
 import time
 
+from utils import Downloader
+
 
 class Interface:
     def __init__(self, search):
@@ -96,6 +98,8 @@ close - to exit the program
 
 
     def download(self):
+        downloader = Downloader()
+
         links = [link.text for link in self.soup.select(".entry.clearfix")[self.chosen_book].select(".wp-audio-shortcode")]
         print(f"\nThe book consists of {len(links)} files")
         
@@ -108,6 +112,7 @@ close - to exit the program
                 title = link.split("/")[-2].replace("%20", "_")
                 number = link.split("/")[-1].split(".")[-2].replace("%20", "")
                 formatt = "."+link.split(".")[-1]
+                filename = title+"/"+number+"_"+title+formatt
 
                 try:
                     os.mkdir(title)
@@ -115,11 +120,10 @@ close - to exit the program
                 except FileExistsError:
                     pass
 
-                with open (title+"/"+number+"_"+title+formatt, "bw") as f:
-                    f.write (requests.get(link).content)
-                print("File #{} {} of {} is downloaded".format(number, title, len(links)))
+                downloader.add_link(filename, link)
 
-            input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
+            downloader.download()
+            input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------\n")
 
         else:
             pass
