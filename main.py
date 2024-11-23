@@ -3,6 +3,8 @@ import requests
 import os
 import time
 
+from decor import time_it
+
 
 class Interface:
     def __init__(self, search):
@@ -95,6 +97,7 @@ close - to exit the program
                 return False
 
 
+    @time_it
     def download(self):
         links = [link.text for link in self.soup.select(".entry.clearfix")[self.chosen_book].select(".wp-audio-shortcode")]
         print(f"\nThe book consists of {len(links)} files")
@@ -119,13 +122,6 @@ close - to exit the program
                     f.write (requests.get(link).content)
                 print("File #{} {} of {} is downloaded".format(number, title, len(links)))
 
-            input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
-
-        else:
-            pass
-        
-        
-
 if __name__ == "__main__":
 
     while True:
@@ -140,6 +136,7 @@ if __name__ == "__main__":
             mysearch.display()
             if mysearch.prompt():
                 mysearch.download()
+                input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------")
             else:
                 pass
                 
