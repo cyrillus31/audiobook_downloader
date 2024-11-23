@@ -3,6 +3,7 @@ import requests
 import os
 import time
 
+from decor import time_it
 from utils import Downloader
 
 
@@ -97,6 +98,7 @@ close - to exit the program
                 return False
 
 
+    @time_it
     def download(self):
         downloader = Downloader()
 
@@ -123,12 +125,6 @@ close - to exit the program
                 downloader.add_link(filename, link)
 
             downloader.download()
-            input ("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------\n")
-
-        else:
-            pass
-        
-        
 
 if __name__ == "__main__":
 
@@ -144,9 +140,7 @@ if __name__ == "__main__":
             mysearch.display()
             if mysearch.prompt():
                 mysearch.download()
-            else:
-                pass
-                
+                input("-----------ALL FILES WERE SUCCESSFULLY DOWNLOADED-----------\n")
 
 
 
